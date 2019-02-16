@@ -15,7 +15,7 @@ const saltRounds = 10;
 async function login(ctx, next) {
   let { username, password } = ctx.request.body || {};
 
-  const [{ password: passwordHash }] = await user.find({ username })
+  const [{ password: passwordHash, _id: id }] = await user.find({ username })
   // log.debug(__filename, __line(__filename), pageNum)
   // log.debug(__filename, __line(__filename), result)
   // ctx.response.body = JSON.stringify(result)
@@ -27,6 +27,7 @@ async function login(ctx, next) {
       // res == true
       if (isMatch) {
         const newToken = jwt.sign({
+          id,
           username
         }, config.jwt.cert, { expiresIn: 60 * 60 * 2 });
         ctx.response.set({'Authorization': newToken});

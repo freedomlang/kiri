@@ -26,7 +26,6 @@ router.post(config.app.apiPath.concat('/upload'), koaBody({
     maxFileSize: config.upload.maxFileSize,
     onFileBegin:(name,file) => {
       const currentDate = dayjs(Date.now()).format('YYYYMMDD');
-      console.log(uuid())
       // 获取文件后缀
       const ext = file.name.split('.').pop();
       const randomFileName = `${uuid()}.${ext}`

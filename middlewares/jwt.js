@@ -1,4 +1,5 @@
 var {responseClient, checkAuthority} = require('../utils')
+var config = require('../config');
 var jwt = require('jsonwebtoken');
 
 module.exports = async function (ctx, next) {
@@ -8,24 +9,20 @@ module.exports = async function (ctx, next) {
         return await next()
     } else {
         if (!ctx.header.authorization) {
-            responseClient(ctx.response, 200, '9999', '请登录后再操作！')
-            // ctx.res.end();
-            // ctx.throw(401, JSON.stringify({
-            //     code: '9999',
-            //     message: '请登录后再操作！'
-            // }));
+            responseClient(ctx.response, 200, '0401', '请登录后再操作！');
         } else {
-            jwt.verify(ctx.header.authorization, 'secret', async function (err, decoded) {
-                if (err && err.name === 'TokenExpiredError') {
-                    responseClient(ctx.response, 200, 3, '请重新登录！');
-                } else {
-                    await next();
-                    const newToken = jwt.sign({
-                        user: decoded.user
-                    }, 'secret', { expiresIn: 60 * 60 * 2 });
-                    ctx.response.set({'Authorization': newToken});
-                }
-            })
+            try {
+                const { id, user } = jwt.verify(ctx.header.authorization, config.jwt.cert);
+                ctx.request.userId = id;
+                await next();
+                const newToken = jwt.sign({
+                    id,
+                    user
+                }, config.jwt.cert, { expiresIn: 60 * 60 * 2 });
+                ctx.response.set({'Authorization': newToken});
+            } catch (err) {
+                responseClient(ctx.response, 200, '0401', '请重新登录！');
+            }
         }
     }
 }
