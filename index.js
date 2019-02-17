@@ -10,7 +10,7 @@ const uuid = require('uuid/v1');
 var jwt_middleware = require('./middlewares/jwt');
 var { login } = require('./controllers/auth.js');
 var { getArticles, getArticleDetail, deleteArticle, addArticle, updateArticle } = require('./controllers/article.js');
-const { processUploadFile } = require('./controllers/upload.js');
+const { addFile, deleteFile } = require('./controllers/upload.js');
 const { checkDirExist } = require('./utils')
 mongoose.connect(config.mongodb.url);
 var db = mongoose.connection;
@@ -19,8 +19,9 @@ db.on('error', console.error.bind(console, 'connection error:'));
 const app = new Koa();
 var router = new Router();
 
-router.post(config.app.apiPath.concat('/login'), koaBody(), login);
-router.post(config.app.apiPath.concat('/upload'), koaBody({
+const { app: { apiPath} } = config;
+router.post(apiPath.concat('/login'), koaBody(), login);
+router.post(apiPath.concat('/upload'), koaBody({
   multipart: true,
   formidable: {
     maxFileSize: config.upload.maxFileSize,
@@ -39,12 +40,13 @@ router.post(config.app.apiPath.concat('/upload'), koaBody({
       file.path = `${dir}/${randomFileName}`;
     }
   }
-}), processUploadFile);
-router.post(config.app.apiPath.concat('/getArticles'), koaBody(), getArticles);
-router.get(config.app.apiPath.concat('/article/:id'), koaBody(), getArticleDetail);
-router.post(config.app.apiPath.concat('/addArticle'), koaBody(), addArticle);
-router.post(config.app.apiPath.concat('/updateArticle'), koaBody(), updateArticle);
-router.del(config.app.apiPath.concat('/delete_article/:id'), koaBody(), deleteArticle);
+}), addFile);
+router.post(apiPath.concat('/deleteFile'), koaBody(), deleteFile);
+router.post(apiPath.concat('/getArticles'), koaBody(), getArticles);
+router.get(apiPath.concat('/article/:id'), koaBody(), getArticleDetail);
+router.post(apiPath.concat('/addArticle'), koaBody(), addArticle);
+router.post(apiPath.concat('/updateArticle'), koaBody(), updateArticle);
+router.del(apiPath.concat('/delete_article/:id'), koaBody(), deleteArticle);
 
 
 app

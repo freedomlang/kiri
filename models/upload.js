@@ -11,6 +11,7 @@ const uploadSchema = new mongoose.Schema(
     permission: { type: String, default: 'everyone' },
     modified: { type: Date, default: Date.now },
     modifiedBy: { type: String },
+    path: { type: String }
   },
   { versionKey: false }
 );

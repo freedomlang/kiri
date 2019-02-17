@@ -1,4 +1,4 @@
 ### Todos
 - [ ] Add log (winston)
-- [ ] Add feature about delete attachment
+- [x] Add feature about delete attachment
 - [ ] Auto rotate image if orientation is wrong
