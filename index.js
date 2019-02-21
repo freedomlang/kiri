@@ -1,56 +1,13 @@
 const Koa = require('koa');
-var Router = require('koa-router');
-const koaBody = require('koa-body');
+const router = require('./routes')
 var mongoose =  require('mongoose');
 var config = require('./config');
-// timestamp related
-const dayjs = require("dayjs");
-const path = require('path');
-const uuid = require('uuid/v1');
 var jwt_middleware = require('./middlewares/jwt');
-var { login } = require('./controllers/auth.js');
-var { getArticles, getArticleDetail, deleteArticle, addArticle, updateArticle } = require('./controllers/article.js');
-const { createComment } = require('./controllers/comment.js');
-const { addFile, deleteFile } = require('./controllers/upload.js');
-const { checkDirExist } = require('./utils')
 mongoose.connect(config.mongodb.url);
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 
 const app = new Koa();
-var router = new Router();
-
-const { app: { apiPath} } = config;
-router.post(apiPath.concat('/login'), koaBody(), login);
-router.post(apiPath.concat('/upload'), koaBody({
-  multipart: true,
-  formidable: {
-    maxFileSize: config.upload.maxFileSize,
-    onFileBegin:(name,file) => {
-      const currentDate = dayjs(Date.now()).format('YYYYMMDD');
-      // 获取文件后缀
-      const ext = file.name.split('.').pop();
-      const randomFileName = `${uuid()}.${ext}`
-      file.originalName = file.name;
-      file.name = randomFileName;
-      // 最终要保存到的文件夹目录
-      const dir = path.join(config.upload.uploadDir, `${currentDate}`);
-      // 检查文件夹是否存在如果不存在则新建文件夹
-      checkDirExist(dir);
-      // 重新覆盖 file.path 属性
-      file.path = `${dir}/${randomFileName}`;
-    }
-  }
-}), addFile);
-router.post(apiPath.concat('/deleteFile'), koaBody(), deleteFile);
-router.post(apiPath.concat('/getArticles'), koaBody(), getArticles);
-router.get(apiPath.concat('/article/:id'), koaBody(), getArticleDetail);
-router.post(apiPath.concat('/addArticle'), koaBody(), addArticle);
-router.post(apiPath.concat('/updateArticle'), koaBody(), updateArticle);
-router.del(apiPath.concat('/delete_article/:id'), koaBody(), deleteArticle);
-
-router.post(apiPath.concat('/createComment'), koaBody(), createComment);
-
 
 app
   .use(jwt_middleware)
@@ -73,4 +30,4 @@ app
   })
   .use(router.routes())
   .use(router.allowedMethods())
-  .listen(3002);
+  .listen(config.app.port);
