@@ -10,6 +10,7 @@ const uuid = require('uuid/v1');
 var jwt_middleware = require('./middlewares/jwt');
 var { login } = require('./controllers/auth.js');
 var { getArticles, getArticleDetail, deleteArticle, addArticle, updateArticle } = require('./controllers/article.js');
+const { createComment } = require('./controllers/comment.js');
 const { addFile, deleteFile } = require('./controllers/upload.js');
 const { checkDirExist } = require('./utils')
 mongoose.connect(config.mongodb.url);
@@ -47,6 +48,8 @@ router.get(apiPath.concat('/article/:id'), koaBody(), getArticleDetail);
 router.post(apiPath.concat('/addArticle'), koaBody(), addArticle);
 router.post(apiPath.concat('/updateArticle'), koaBody(), updateArticle);
 router.del(apiPath.concat('/delete_article/:id'), koaBody(), deleteArticle);
+
+router.post(apiPath.concat('/createComment'), koaBody(), createComment);
 
 
 app
